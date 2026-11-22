@@ -11,9 +11,6 @@
     <PREFIXO>/luminosidade  {"luminosidade": <lux>, "bruto": <0-4095>, "dispositivo": "dev1_sensor"}
     <PREFIXO>/potencia      {"potencia_W": <W>,     "bruto": <0-4095>, "dispositivo": "dev1_sensor"}
 
-  IMPORTANTE: troque TOPIC_PREFIX por um prefixo exclusivo do grupo
-  (o broker é público e qualquer pessoa pode ler/escrever nos tópicos).
-  O MESMO prefixo deve ser usado no dispositivo 2 e no Node-RED.
 */
 
 #include <WiFi.h>
@@ -57,7 +54,7 @@ void conectaWifi() {
   }
   Serial.println(" OK");
   Serial.print("IP do dispositivo: ");
-  Serial.println(WiFi.localIP());   // anote este IP para a tabela de topologia do artigo
+  Serial.println(WiFi.localIP());
 }
 
 void conectaMqtt() {

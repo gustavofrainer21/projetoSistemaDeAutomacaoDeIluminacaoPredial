@@ -7,7 +7,8 @@ Projeto da disciplina **Objetos Inteligentes Conectados** (Universidade Presbite
 - **Vídeo de apresentação:** [COLE AQUI O LINK DO YOUTUBE]
 - **Dispositivo 1 (sensor) no Wokwi:** https://wokwi.com/projects/481422055951067137
 - **Dispositivo 2 (atuador) no Wokwi:** https://wokwi.com/projects/481422034321038337
-- **Artigo:** [docs/artigo.pdf](docs/artigo.pdf)
+- **Artigo:** [Modelo_de_Artigo-Trabalho_Objetos_Inteligentes_Conectados - v3.docx](https://github.com/user-attachments/files/35245882/Modelo_de_Artigo-Trabalho_Objetos_Inteligentes_Conectados.-.v3.docx)
+
 
 ## 1. Descrição
 

@@ -1,0 +1,514 @@
+[
+  {
+    "id": "tab_ods7",
+    "type": "tab",
+    "label": "ODS 7 - Iluminação inteligente",
+    "disabled": false,
+    "info": "Node-RED do projeto. Regras de negócio, APIs, MQTT e InfluxDB."
+  },
+  {
+    "id": "cfg_mqtt",
+    "type": "mqtt-broker",
+    "name": "HiveMQ público",
+    "broker": "broker.hivemq.com",
+    "port": "1883",
+    "clientid": "nr-ods7-ilumq7x",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "cfg_influx",
+    "type": "influxdb",
+    "hostname": "127.0.0.1",
+    "port": "8086",
+    "protocol": "http",
+    "database": "database",
+    "name": "InfluxDB Cloud",
+    "usetls": true,
+    "tls": "",
+    "influxdbVersion": "2.0",
+    "url": "https://COLE-AQUI-A-URL-DO-SEU-INFLUXDB-CLOUD",
+    "timeout": "10",
+    "rejectUnauthorized": true
+  },
+  {
+    "id": "c_init",
+    "type": "comment",
+    "z": "tab_ods7",
+    "name": "0) Inicialização e troca de cenário",
+    "info": "",
+    "x": 170,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "inj_init",
+    "type": "inject",
+    "z": "tab_ods7",
+    "name": "Valores iniciais (ao iniciar)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 180,
+    "y": 80,
+    "wires": [
+      [
+        "f_init"
+      ]
+    ]
+  },
+  {
+    "id": "f_init",
+    "type": "function",
+    "z": "tab_ods7",
+    "name": "Define limiares e variáveis",
+    "func": "// Valores iniciais (rodam uma vez ao fazer o deploy)\nflow.set('cenario', 'B');          // B = com automação\nflow.set('limiarOn', 150);         // lux: abaixo disso LIGA\nflow.set('limiarOff', 200);        // lux: acima disso DESLIGA\nflow.set('nuvensAlto', 70);        // % de nuvens considerado \"céu fechado\"\nflow.set('acrescimoNuvens', 50);   // lux somados aos limiares em dia nublado\nflow.set('amostrasConfirma', 2);   // amostras consecutivas para confirmar mudança\nflow.set('nuvens', 0);\nflow.set('potencia', 0);\nflow.set('estadoReal', 'DESLIGADO');\nflow.set('estadoCmd', '');\nflow.set('pend', 0);\nnode.status({text:'init ok'});\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 430,
+    "y": 80,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "inj_A",
+    "type": "inject",
+    "z": "tab_ods7",
+    "name": "CENÁRIO A (sem automação)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "A",
+    "payloadType": "str",
+    "x": 190,
+    "y": 130,
+    "wires": [
+      [
+        "f_cen"
+      ]
+    ]
+  },
+  {
+    "id": "inj_B",
+    "type": "inject",
+    "z": "tab_ods7",
+    "name": "CENÁRIO B (com automação)",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "B",
+    "payloadType": "str",
+    "x": 190,
+    "y": 170,
+    "wires": [
+      [
+        "f_cen"
+      ]
+    ]
+  },
+  {
+    "id": "f_cen",
+    "type": "function",
+    "z": "tab_ods7",
+    "name": "Troca de cenário",
+    "func": "// Troca de cenário: A = sem automação (referência) | B = com automação\nconst novo = msg.payload;\nflow.set('cenario', novo);\nflow.set('pend', 0);\nflow.set('estadoCmd', '');\nnode.status({ text: 'cenario ' + novo });\nif (novo === 'A') return { payload: 'LIGAR' };   // garante luminária ligada no cenário A\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 430,
+    "y": 150,
+    "wires": [
+      [
+        "mq_cmd_cen"
+      ]
+    ]
+  },
+  {
+    "id": "mq_cmd_cen",
+    "type": "mqtt out",
+    "z": "tab_ods7",
+    "name": "comando (cenário A)",
+    "topic": "iot/ilumq7x/ods7/comando",
+    "qos": "1",
+    "retain": "true",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "cfg_mqtt",
+    "x": 680,
+    "y": 150,
+    "wires": []
+  },
+  {
+    "id": "c_in",
+    "type": "comment",
+    "z": "tab_ods7",
+    "name": "1) Entrada MQTT + regras de negócio",
+    "info": "",
+    "x": 190,
+    "y": 230,
+    "wires": []
+  },
+  {
+    "id": "mq_lux",
+    "type": "mqtt in",
+    "z": "tab_ods7",
+    "name": "luminosidade",
+    "topic": "iot/ilumq7x/ods7/luminosidade",
+    "qos": "0",
+    "datatype": "json",
+    "broker": "cfg_mqtt",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 280,
+    "wires": [
+      [
+        "f_regra",
+        "d_lux"
+      ]
+    ]
+  },
+  {
+    "id": "mq_pot",
+    "type": "mqtt in",
+    "z": "tab_ods7",
+    "name": "potencia",
+    "topic": "iot/ilumq7x/ods7/potencia",
+    "qos": "0",
+    "datatype": "json",
+    "broker": "cfg_mqtt",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 140,
+    "y": 340,
+    "wires": [
+      [
+        "f_pot"
+      ]
+    ]
+  },
+  {
+    "id": "mq_est",
+    "type": "mqtt in",
+    "z": "tab_ods7",
+    "name": "estado",
+    "topic": "iot/ilumq7x/ods7/estado",
+    "qos": "0",
+    "datatype": "auto",
+    "broker": "cfg_mqtt",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 400,
+    "wires": [
+      [
+        "f_est",
+        "d_est"
+      ]
+    ]
+  },
+  {
+    "id": "f_pot",
+    "type": "function",
+    "z": "tab_ods7",
+    "name": "Guarda potência",
+    "func": "let p = msg.payload;\nif (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { return null; } }\nconst w = Number(p.potencia_W);\nif (!isFinite(w) || w < 0 || w > 1000) return null;\nflow.set('potencia', w);\nnode.status({ text: w.toFixed(1) + ' W' });\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 400,
+    "y": 340,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "f_est",
+    "type": "function",
+    "z": "tab_ods7",
+    "name": "Guarda estado real",
+    "func": "const s = String(msg.payload).trim().toUpperCase();\nif (s === 'LIGADO' || s === 'DESLIGADO') {\n  flow.set('estadoReal', s);\n  node.status({ text: s });\n}\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 410,
+    "y": 400,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "f_regra",
+    "type": "function",
+    "z": "tab_ods7",
+    "name": "REGRAS 1,2,3: histerese + clima + potência efetiva",
+    "func": "// REGRAS 1 e 2: histerese + ajuste de limiar pelo clima\nlet p = msg.payload;\nif (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { return null; } }\nconst lux = Number(p.luminosidade);\n// descarta leituras fora da faixa válida do sensor\nif (!isFinite(lux) || lux < 0 || lux > 100000) { node.warn('Leitura descartada: ' + p.luminosidade); return null; }\n\nconst cenario   = flow.get('cenario') || 'B';\nconst nuvens    = Number(flow.get('nuvens') || 0);\nconst potMed    = Number(flow.get('potencia') || 0);\nconst estadoReal= flow.get('estadoReal') || 'DESLIGADO';\nlet   estadoCmd = flow.get('estadoCmd') || '';\nconst acr       = nuvens > flow.get('nuvensAlto') ? flow.get('acrescimoNuvens') : 0;   // REGRA 2\nconst limOn     = flow.get('limiarOn')  + acr;\nconst limOff    = flow.get('limiarOff') + acr;\nconst N         = flow.get('amostrasConfirma');\n\nlet desejado = estadoCmd || 'DESLIGADO';\nif (cenario === 'A') {\n  desejado = 'LIGADO';                         // cenário A: sem automação, luminária sempre ligada\n} else {\n  if (lux < limOn) desejado = 'LIGADO';        // REGRA 1: abaixo do limiar de acionamento\n  else if (lux > limOff) desejado = 'DESLIGADO'; // acima do limiar de desligamento\n}\n\n// confirmação por N amostras consecutivas (evita acionar por pico isolado)\nlet cmdMsg = null;\nif (desejado !== estadoCmd) {\n  let pend = (flow.get('pend') || 0) + 1;\n  if (pend >= N || cenario === 'A' || estadoCmd === '') {\n    estadoCmd = desejado;\n    flow.set('estadoCmd', estadoCmd);\n    flow.set('pend', 0);\n    cmdMsg = { payload: desejado === 'LIGADO' ? 'LIGAR' : 'DESLIGAR' };   // só envia quando o estado muda\n  } else {\n    flow.set('pend', pend);\n  }\n} else {\n  flow.set('pend', 0);\n}\n\n// REGRA 3: potência efetiva (base do cálculo de energia)\n// A: luminária sempre ligada -> potência medida. B: só conta quando o relé está ligado.\nconst potEfetiva = (cenario === 'A') ? potMed : (estadoReal === 'LIGADO' ? potMed : 0);\n\nconst fields = {\n  luminosidade: lux,\n  potencia_medida_W: potMed,\n  potencia_efetiva_W: potEfetiva,\n  estado_cmd: estadoCmd === 'LIGADO' ? 1 : 0,\n  estado_real: estadoReal === 'LIGADO' ? 1 : 0,\n  limiar_on: limOn,\n  limiar_off: limOff,\n  nuvens_pct: nuvens\n};\nconst dbMsg = { payload: [ fields, { cenario: cenario } ] };\nnode.status({ text: cenario + ' | ' + lux.toFixed(0) + ' lux | ' + (estadoCmd||'-') });\nreturn [cmdMsg, null, dbMsg];   // saída 2 reservada (sem uso)",
+    "outputs": 3,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 470,
+    "y": 280,
+    "wires": [
+      [
+        "mq_cmd"
+      ],
+      [],
+      [
+        "inf_out"
+      ]
+    ]
+  },
+  {
+    "id": "mq_cmd",
+    "type": "mqtt out",
+    "z": "tab_ods7",
+    "name": "comando",
+    "topic": "iot/ilumq7x/ods7/comando",
+    "qos": "1",
+    "retain": "true",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "cfg_mqtt",
+    "x": 800,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "inf_out",
+    "type": "influxdb out",
+    "z": "tab_ods7",
+    "influxdb": "cfg_influx",
+    "name": "grava iluminacao_ods7",
+    "measurement": "iluminacao_ods7",
+    "precision": "",
+    "retentionPolicy": "",
+    "database": "database",
+    "precisionV18FluxV20": "ms",
+    "retentionPolicyV18Flux": "",
+    "org": "COLE-AQUI-SUA-ORG",
+    "bucket": "iluminacao",
+    "x": 830,
+    "y": 340,
+    "wires": []
+  },
+  {
+    "id": "d_lux",
+    "type": "debug",
+    "z": "tab_ods7",
+    "name": "lux recebido",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 760,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "d_est",
+    "type": "debug",
+    "z": "tab_ods7",
+    "name": "estado do atuador",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 760,
+    "y": 420,
+    "wires": []
+  },
+  {
+    "id": "c_api",
+    "type": "comment",
+    "z": "tab_ods7",
+    "name": "2) API OpenWeather (a cada 10 min)",
+    "info": "",
+    "x": 190,
+    "y": 480,
+    "wires": []
+  },
+  {
+    "id": "inj_owm",
+    "type": "inject",
+    "z": "tab_ods7",
+    "name": "a cada 10 min",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "600",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "3",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 150,
+    "y": 530,
+    "wires": [
+      [
+        "f_owm1"
+      ]
+    ]
+  },
+  {
+    "id": "f_owm1",
+    "type": "function",
+    "z": "tab_ods7",
+    "name": "Monta URL (chave via env)",
+    "func": "// Monta a URL da OpenWeather. A chave vem de variavel de ambiente (nao fica no flows.json)\nconst key = env.get('OPENWEATHER_KEY');\nif (!key) { node.error('Defina a variavel de ambiente OPENWEATHER_KEY'); return null; }\nconst cidade = env.get('OPENWEATHER_CITY') || 'Sao Paulo,BR';\nmsg.url = 'https://api.openweathermap.org/data/2.5/weather?q=' + encodeURIComponent(cidade) + '&units=metric&appid=' + key;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 530,
+    "wires": [
+      [
+        "http_owm"
+      ]
+    ]
+  },
+  {
+    "id": "http_owm",
+    "type": "http request",
+    "z": "tab_ods7",
+    "name": "GET OpenWeather",
+    "method": "GET",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 600,
+    "y": 530,
+    "wires": [
+      [
+        "f_owm2"
+      ]
+    ]
+  },
+  {
+    "id": "f_owm2",
+    "type": "function",
+    "z": "tab_ods7",
+    "name": "Extrai clouds.all",
+    "func": "const d = msg.payload;\nif (!d || !d.clouds || typeof d.clouds.all !== 'number') { node.warn('Resposta inesperada da OpenWeather'); return null; }\nflow.set('nuvens', d.clouds.all);\nnode.status({ text: 'nuvens ' + d.clouds.all + '%' });\nmsg.payload = d.clouds.all;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 820,
+    "y": 530,
+    "wires": [
+      [
+        "d_owm"
+      ]
+    ]
+  },
+  {
+    "id": "d_owm",
+    "type": "debug",
+    "z": "tab_ods7",
+    "name": "nuvens (%)",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1010,
+    "y": 530,
+    "wires": []
+  }
+]

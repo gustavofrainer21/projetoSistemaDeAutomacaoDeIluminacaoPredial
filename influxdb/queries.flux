@@ -3,7 +3,6 @@
 // Bucket: iluminacao | Medição: iluminacao_ods7
 // Campos: luminosidade, potencia_medida_W, potencia_efetiva_W, estado_cmd,
 //         estado_real, limiar_on, limiar_off, nuvens_pct | Tag: cenario (A|B)
-// Se o seu bucket tiver outro nome, troque "iluminacao" abaixo.
 // =====================================================================
 
 // ---------------- DASHBOARD 1: Monitoramento da iluminação ----------------

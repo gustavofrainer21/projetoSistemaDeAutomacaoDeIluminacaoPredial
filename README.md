@@ -2,7 +2,7 @@
 
 Projeto da disciplina **Objetos Inteligentes Conectados** (Universidade Presbiteriana Mackenzie).
 
-- **Integrantes:** André Lucena, Gustavo Bráz
+- **Integrantes:** André Lucena, Gustavo Frainer
 - **ODS:** 7 – Energia Limpa e Acessível | **Meta 7.3** (eficiência energética)
 - **Vídeo de apresentação:** [COLE AQUI O LINK DO YOUTUBE]
 - **Dispositivo 1 (sensor) no Wokwi:** https://wokwi.com/projects/481422055951067137

@@ -4,7 +4,7 @@ Projeto da disciplina **Objetos Inteligentes Conectados** (Universidade Presbite
 
 - **Integrantes:** André Lucena, Gustavo Frainer
 - **ODS:** 7 – Energia Limpa e Acessível | **Meta 7.3** (eficiência energética)
-- **Vídeo de apresentação:** [COLE AQUI O LINK DO YOUTUBE]
+- **Vídeo de apresentação:** https://youtu.be/Xm0vimuuBnM?si=MwYP99PlbZpheKJM
 - **Dispositivo 1 (sensor) no Wokwi:** https://wokwi.com/projects/481422055951067137
 - **Dispositivo 2 (atuador) no Wokwi:** https://wokwi.com/projects/481422034321038337
 - **Artigo:** [Modelo_de_Artigo-Trabalho_Objetos_Inteligentes_Conectados - v3.pdf](https://github.com/user-attachments/files/35246068/Modelo_de_Artigo-Trabalho_Objetos_Inteligentes_Conectados.-.v3.pdf)

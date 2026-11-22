@@ -11,12 +11,13 @@
     assina   <PREFIXO>/comando   payload: "LIGAR" ou "DESLIGAR"
     publica  <PREFIXO>/estado    payload: "LIGADO" ou "DESLIGADO" (retido)
 
+  O TOPIC_PREFIX é o mesmo do dispositivo 1 e do Node-RED.
 */
 
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-// ---------- CONFIGURAÇÕES ----------
+// Configurações
 const char* WIFI_SSID = "Wokwi-GUEST";
 const char* WIFI_PASS = "";
 const int   WIFI_CHANNEL = 6;
@@ -24,6 +25,7 @@ const int   WIFI_CHANNEL = 6;
 const char* MQTT_HOST = "broker.hivemq.com";
 const int   MQTT_PORT = 1883;
 
+// Prefixo dos tópicos MQTT
 #define TOPIC_PREFIX "iot/ilumq7x/ods7"
 const char* TOPIC_CMD = TOPIC_PREFIX "/comando";
 const char* TOPIC_EST = TOPIC_PREFIX "/estado";
@@ -57,13 +59,13 @@ void aoReceber(char* topic, byte* payload, unsigned int len) {
   bool novo = ligado;
   if (msg == "LIGAR") novo = true;
   else if (msg == "DESLIGAR") novo = false;
-  else return;                      
+  else return;                       // comando desconhecido: ignora
 
   if (novo != ligado) {
     ligado = novo;
     aplicaRele(ligado);
   }
-  publicaEstado();  // confirma sempre o estado real
+  publicaEstado();                   // confirma sempre o estado real
 }
 
 void conectaWifi() {

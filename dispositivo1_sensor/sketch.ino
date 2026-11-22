@@ -11,6 +11,8 @@
     <PREFIXO>/luminosidade  {"luminosidade": <lux>, "bruto": <0-4095>, "dispositivo": "dev1_sensor"}
     <PREFIXO>/potencia      {"potencia_W": <W>,     "bruto": <0-4095>, "dispositivo": "dev1_sensor"}
 
+  O prefixo dos tópicos é exclusivo do grupo (broker público) e deve ser o
+  mesmo no dispositivo 2 e no Node-RED.
 */
 
 #include <WiFi.h>
@@ -18,7 +20,7 @@
 #include <ArduinoJson.h>
 #include <math.h>
 
-// ---------- CONFIGURAÇÕES ----------
+// Configurações
 const char* WIFI_SSID = "Wokwi-GUEST";
 const char* WIFI_PASS = "";
 const int   WIFI_CHANNEL = 6;
@@ -26,7 +28,7 @@ const int   WIFI_CHANNEL = 6;
 const char* MQTT_HOST = "broker.hivemq.com";
 const int   MQTT_PORT = 1883;
 
-// >>> TROQUE pelo prefixo do seu grupo <<<
+// Prefixo dos tópicos MQTT
 #define TOPIC_PREFIX "iot/ilumq7x/ods7"
 const char* TOPIC_LUX = TOPIC_PREFIX "/luminosidade";
 const char* TOPIC_POT = TOPIC_PREFIX "/potencia";
@@ -107,7 +109,7 @@ void publicaLuminosidade() {
 
 void publicaPotencia() {
   int bruto = leituraMedia(PIN_POT);
-  float watts = bruto / 4095.0 * P_MAX_W;   // adaptação: potenciômetro -> watts
+  float watts = bruto / 4095.0 * P_MAX_W;   // potenciômetro convertido em watts
   StaticJsonDocument<128> doc;
   doc["potencia_W"] = round(watts * 10.0) / 10.0;
   doc["bruto"] = bruto;

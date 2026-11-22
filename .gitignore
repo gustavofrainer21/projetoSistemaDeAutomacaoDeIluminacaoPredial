@@ -1,0 +1,7 @@
+.env
+flows_cred.json
+*_cred.json
+*.zip
+*.rar
+*.7z
+node_modules/

@@ -68,7 +68,7 @@ e `node-red/flows.json` (busca e substituição em todo o arquivo).
 3. Inicie a simulação e confirme `Conectando ao broker MQTT... OK` no monitor serial.
 
 ### 5.4 Node-RED
-1. Instale a paleta `node-red-contrib-influxdb`.
+1. Instale a paleta `node-red-contrib-influxdb` (lista de nós em `node-red/nos_instalados.md`).
 2. Defina a variável de ambiente (modelo em `.env.example`): `OPENWEATHER_KEY`.
 3. Inicie o Node-RED e importe `node-red/flows.json` (Menu > Import).
 4. Edite o nó de configuração **InfluxDB Cloud** (URL e token) e o nó `grava iluminacao_ods7` (organização e bucket).
@@ -76,7 +76,7 @@ e `node-red/flows.json` (busca e substituição em todo o arquivo).
 
 ### 5.5 InfluxDB Cloud
 Crie o bucket `iluminacao` e um token com permissão de escrita (Node-RED) e outro de leitura (Grafana).
-Consultas: `influxdb/queries.flux`. Dados gravados na medição `iluminacao_ods7`:
+Estrutura do bucket: `influxdb/estrutura_bucket.md`. Consultas: `influxdb/queries.flux`. Dados gravados na medição `iluminacao_ods7`:
 
 | Campo | Descrição |
 |---|---|
@@ -130,8 +130,8 @@ projeto-iluminacao-ods7/
 ├── .gitignore
 ├── dispositivo1_sensor/   sketch.ino, diagram.json, libraries.txt
 ├── dispositivo2_atuador/  sketch.ino, diagram.json, libraries.txt
-├── node-red/              flows.json
-├── influxdb/              queries.flux
+├── node-red/              flows.json, nos_instalados.md
+├── influxdb/              queries.flux, estrutura_bucket.md
 ├── grafana/               dashboards exportados (JSON) e LEIA-ME.md
 └── docs/                  artigo, diagramas, capturas/ (prints do experimento)
 ```
